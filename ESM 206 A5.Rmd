@@ -1,0 +1,50 @@
+---
+title: "ESM 205 Assignment 5"
+author: "Derek Nguyen"
+date: "11/20/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+install.packages(c(""))
+```
+
+
+```{r}
+library(tidyverse)
+library(effsize)
+library(janitor)
+library(tidyr)
+library(tidyr)
+library(kableExtra)
+library(car)
+library(ggbeeswarm)
+```
+
+
+```{r}
+mack_creek_vert <- readr::read_csv("mack_creek_vertebrates.csv") %>% 
+  clean_names()
+```
+
+
+
+```{r}
+mack_creek_counts <- mack_creek_dite %>% 
+  count()
+```
+
+
+
+
+
+
+
+
+
+
+
