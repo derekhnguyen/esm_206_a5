@@ -9,9 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
-install.packages(c(""))
-```
+
 
 
 ```{r}
@@ -34,11 +32,22 @@ mack_creek_vert <- readr::read_csv("mack_creek_vertebrates.csv") %>%
 
 
 ```{r}
-mack_creek_counts <- mack_creek_dite %>% 
-  count()
+mack_creek_dite <- mack_creek_vert %>% 
+  filter(species == "DITE") %>% 
+  count(year, section)
 ```
 
+```{r}
+ggplot(data = mack_creek_dite, aes(x = year, y = n, fill = section)) +
+  geom_col() +
+  facet_wrap(~section)
+```
 
+```{r}
+ggplot(data = mack_creek_dite, aes(x = year, y = n)) +
+  geom_line() +
+  facet_wrap(~section)
+```
 
 
 
