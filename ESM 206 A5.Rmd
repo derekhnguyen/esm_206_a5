@@ -58,7 +58,11 @@ ggplot(data = mack_creek_dite, aes(x = year, y = n, fill = section)) +
   facet_wrap(~section) +
   scale_x_continuous(expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0)) +
-  theme_dark()
+  theme_dark() +
+  labs(y = "Total Counts",
+       title = "Annual Salamander Counts in Old Growth (OG) & Clear Cut (CC)",
+       caption = "1993 - 2017",
+       x = NULL)
 ```
 
 ```{r}
@@ -89,7 +93,7 @@ mack_creek_counts <- mack_creek_vert %>%
   
   
 
-# wide formate
+# wide format
 mack_creek_table <- mack_creek_counts %>% 
   select(-year, -species) %>% 
   pivot_wider(names_from = unittype, values_from = n)
@@ -108,7 +112,7 @@ mack_creek_props
 kable(mack_creek_props) %>% 
   kable_styling(bootstrap_options = "striped", 
                 full_width = F,
-                position = "left") %>% 
+                position = "center") %>% 
   row_spec(c(1:2),
                    color = "purple")
 ```
@@ -125,14 +129,14 @@ HA: There is no significant difference....
 D. Compare weights of Pacific giant salamanders in clear cut and old growth forest sections of the creek in 2017
 
 ```{r}
-mack_creek_weight <- mack_creek_vert %>% 
+section_mack_creek_weight <- mack_creek_vert %>% 
   select(year, species, section, weight) %>% 
   filter(year == "2017",
          species == "DITE",
          section %in% c("OG", "CC")) %>% 
   group_by(section) %>% 
-  summarize(mean = mean(weight, na.rm = TRUE),
-            sd = sd(weight, na.rm = TRUE),
+  summarize(mean_weight = mean(weight, na.rm = TRUE),
+            sd_weight = sd(weight, na.rm = TRUE),
             sample_size = n())
 ```
 
@@ -145,12 +149,62 @@ Is there a significant difference in mean weights for Pacific giant salamanders 
 
 E. Compare weights of Pacific giant salamanders in pools, cascades and side-channels of Mack Creek in 2017...
 
+```{r}
+summary_mack_creek_weight_unit <- mack_creek_vert %>% 
+  select(year, species, unittype, section, weight) %>% 
+  filter(year == "2017",
+         species == "DITE",
+         section == c("OG", "CC"),
+         unittype == c("P", "C", "SC")) %>% 
+  group_by(unittype) %>% 
+  summarize(mean_weight = mean(weight, na.rm = TRUE),
+            sd_weight = sd(weight, na.rm = TRUE),
+            sample_size = n(),
+            se_weight = sd(weight) / sqrt(n()),
+            var_weight = var(weight))
+
+summary_mack_creek_weight_unit
+```
 
 
+```{r}
+mack_creek_weight_unit <- mack_creek_vert %>% 
+  select(year, species, unittype, section, weight) %>% 
+  filter(year == "2017",
+         species == "DITE",
+         unittype %in% c("P", "C", "SC"))
 
 
+```
 
 
+```{r}
+ggplot() +
+  geom_beeswarm(data = mack_creek_weight_unit,
+                aes(x = unittype,
+                    y = weight,
+                    color = unittype),
+                show.legend = FALSE,
+                size = 1.4,
+                alpha = 0.7) +
+  scale_x_discrete(labels = c("P", "CC", "SC")) +
+  geom_point(data = summary_mack_creek_weight_unit, aes(x = unittype, y = mean_weight),
+             color = "firebrick",
+             size = 2.2,
+             width = 0.3) +
+  theme_minimal() +
+  geom_errorbar(data = summary_mack_creek_weight_unit,
+                aes(x = unittype,
+                    ymin = mean_weight - sd_weight,
+                    ymax = mean_weight + sd_weight),
+                color = "firebrick",
+                width = 0.25) +
+  theme_minimal() +
+  labs(x = "Unit Type",
+       y = "Weight (grams)",
+       title = "Pacific Giant Salamander Weights between the Three Channels",
+       caption = "Weight comparison for 2017")
+```
 
 
 
