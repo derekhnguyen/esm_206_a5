@@ -32,7 +32,7 @@ Citation: Gregory S. V. 2016. Aquatic Vertebrate Population Study in Mack Creek,
 
 ***Figure 1: Pacific Giant Salamander 'Dicamptodon tenebrosus'.*** *Pacific Giant Salamander chilling on a bed of leaves. (Credit: [Wikipedia](https://en.wikipedia.org/wiki/Pacific_giant_salamander))*
 
-![](mack.png)
+![](mack.png) 
 ***Figure 2: Mack Creek, Andrews Experimental Forest.*** *Spacial Coverage of Study Site. (Credit: [LTER](https://portal.lternet.edu/nis/mapbrowse?scope=knb-lter-and&identifier=4027&revision=13))*
 
 
@@ -166,7 +166,7 @@ summary_mack_creek_weight_unit <- mack_creek_vert %>%
 summary_mack_creek_weight_unit
 ```
 
-
+First,
 ```{r}
 mack_creek_weight_unit <- mack_creek_vert %>% 
   select(year, species, unittype, section, weight) %>% 
@@ -206,7 +206,10 @@ ggplot() +
        caption = "Weight comparison for 2017")
 ```
 
+SEcond, Is there a significant difference in mean weights for Pacific giant salamanders observed in pools vs. cascades vs. side-channels in 2017?
+
+-
 
 
-
+Third, describe any concerns you have about comparing means across the groups. What might be another option to consider moving forward with the analysis
 
