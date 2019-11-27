@@ -38,7 +38,8 @@ Citation: Gregory S. V. 2016. Aquatic Vertebrate Population Study in Mack Creek,
 
 ```{r}
 mack_creek_vert <- readr::read_csv("mack_creek_vertebrates.csv") %>% 
-  clean_names()
+  clean_names() %>% 
+  select(-pitnumber, -notes, -length2)
 ```
 
 A. Visually compare annual salamander counts in old growth (OG) and clear cut (CC) sections of Mack Creek...
@@ -96,7 +97,11 @@ mack_creek_counts <- mack_creek_vert %>%
 # wide format
 mack_creek_table <- mack_creek_counts %>% 
   select(-year, -species) %>% 
-  pivot_wider(names_from = unittype, values_from = n)
+  pivot_wider(names_from = unittype, values_from = n) %>% 
+  rename("Pool" = P,
+         "Cascades" = C,
+         "Side Channel" = SC)
+
 ```
  
 
@@ -115,10 +120,19 @@ kable(mack_creek_props) %>%
                 position = "center") %>% 
   row_spec(c(1:2),
                    color = "purple")
+
+mack_creek_props$section <- gsub("CC", "Clear cut", mack_creek_props$section)
+mack_creek_props$section <- gsub("OG", "Old growth", mack_creek_props$section)
+
 ```
 
 
 C.  Is there a significant difference in where in the channel Pacific giant salamanders are located (pool, cascade or side channel) between the two sections (old growth and clear cut)? 
+
+```{r}
+
+```
+
 
 H0: Is there a significant difference in where pacific giant salamanders are located between the two sections? 
 
@@ -138,10 +152,25 @@ section_mack_creek_weight <- mack_creek_vert %>%
   summarize(mean_weight = mean(weight, na.rm = TRUE),
             sd_weight = sd(weight, na.rm = TRUE),
             sample_size = n())
+
+kable(section_mack_creek_weight) %>% 
+  kable_styling(bootstrap_options = "striped", 
+                full_width = F,
+                position = "center") %>% 
+  row_spec(c(1:2),
+                   color = "purple")
+
+section_mack_creek_weight$section <- gsub("OG", "Old growth", section_mack_creek_weight$section)
+section_mack_creek_weight$section <- gsub("CC", "Clear cut", section_mack_creek_weight$section)
+
+
 ```
 
 Is there a significant difference in mean weights for Pacific giant salamanders observed in the two forest sections (clear cut and old growth) in 2017? 
  
+```{r}
+
+```
 
 
 
@@ -149,34 +178,33 @@ Is there a significant difference in mean weights for Pacific giant salamanders 
 
 E. Compare weights of Pacific giant salamanders in pools, cascades and side-channels of Mack Creek in 2017...
 
-```{r}
-summary_mack_creek_weight_unit <- mack_creek_vert %>% 
-  select(year, species, unittype, section, weight) %>% 
-  filter(year == "2017",
-         species == "DITE",
-         section == c("OG", "CC"),
-         unittype == c("P", "C", "SC")) %>% 
-  group_by(unittype) %>% 
-  summarize(mean_weight = mean(weight, na.rm = TRUE),
-            sd_weight = sd(weight, na.rm = TRUE),
-            sample_size = n(),
-            se_weight = sd(weight) / sqrt(n()),
-            var_weight = var(weight))
-
-summary_mack_creek_weight_unit
-```
-
 First,
 ```{r}
 mack_creek_weight_unit <- mack_creek_vert %>% 
-  select(year, species, unittype, section, weight) %>% 
   filter(year == "2017",
          species == "DITE",
-         unittype %in% c("P", "C", "SC"))
-
-
+         unittype != "IP") %>% 
+  group_by(unittype) 
 ```
 
+
+
+```{r}
+summary_mack_creek_weight_unit <- mack_creek_weight_unit %>% 
+  summarize(mean_weight = mean(weight, na.rm = TRUE),
+            sd_weight = sd(weight, na.rm = TRUE),
+            sample_size = n(),
+            se_weight = sd((weight) / sqrt(n()), (na.rm = TRUE)),
+            var_weight = var(weight, na.rm = TRUE))
+
+kable(summary_mack_creek_weight_unit) %>% 
+  kable_styling(bootstrap_options = "striped", 
+                full_width = F,
+                position = "center") %>% 
+  row_spec(c(1:3),
+                   color = "purple")
+
+```
 
 ```{r}
 ggplot() +
@@ -206,9 +234,11 @@ ggplot() +
        caption = "Weight comparison for 2017")
 ```
 
+
+
 SEcond, Is there a significant difference in mean weights for Pacific giant salamanders observed in pools vs. cascades vs. side-channels in 2017?
 
--
+- 
 
 
 Third, describe any concerns you have about comparing means across the groups. What might be another option to consider moving forward with the analysis
