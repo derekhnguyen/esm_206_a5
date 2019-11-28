@@ -1,7 +1,7 @@
 ---
 title: "ESM 205 Assignment 5"
-author: "Derek Nguyen"
-date: "11/20/2019"
+author: "Derek Nguyen and Bobby Miyashiro"
+date: "12/04/2019"
 output: html_document
 ---
 
@@ -36,7 +36,7 @@ Citation: Gregory S. V. 2016. Aquatic Vertebrate Population Study in Mack Creek,
 ***Figure 2: Mack Creek, Andrews Experimental Forest.*** *Spacial Coverage of Study Site. (Credit: [LTER](https://portal.lternet.edu/nis/mapbrowse?scope=knb-lter-and&identifier=4027&revision=13))*
 
 
-```{r}
+```{r,echo=FALSE, warning=FALSE, include = FALSE}
 mack_creek_vert <- readr::read_csv("mack_creek_vertebrates.csv") %>% 
   clean_names() %>% 
   select(-pitnumber, -notes, -length2)
@@ -44,7 +44,7 @@ mack_creek_vert <- readr::read_csv("mack_creek_vertebrates.csv") %>%
 
 A. Visually compare annual salamander counts in old growth (OG) and clear cut (CC) sections of Mack Creek...
 
-```{r}
+```{r, echo = FALSE}
 mack_creek_dite <- mack_creek_vert %>% 
   filter(species %in% "DITE") %>% 
   count(year, section)
@@ -53,7 +53,7 @@ mack_creek_dite_table <- mack_creek_dite %>%
   pivot_wider(names_from = section, values_from = n)
 ```
 
-```{r}
+```{r, echo = FALSE}
 ggplot(data = mack_creek_dite, aes(x = year, y = n, fill = section)) +
   geom_col(alpha = .8) +
   facet_wrap(~section) +
@@ -68,7 +68,7 @@ ggplot(data = mack_creek_dite, aes(x = year, y = n, fill = section)) +
 ***Figure 3: Annual Salamander Counts in Old Growth (OG) & Clear Cut (CC) Forests along Mack Creek.*** *Counts of Pacific Giant Salamander in clear cut forest and old growth forest sections along Mack Creek are shown from 1993 through 2017. Data [Gregory S.V. 2016](https://doi.org/10.6073/pasta/5de64af9c11579266ef20da2ff32f702]*
 
 Observations of Pacific Giant Salamander's along Mack Creek are compared between the old growth sections and clear cut sections between the years of 1993 and 2017. As shown in Figure 3, the overall graph shapes and counts are very similar between the two different sections between the years. General trends along both graphs show that there was an increase in observation counts during the year 2002. There was a decrease in counts during 2014 and then the counts then increased again after that. These trends are consistent across both creek sections, indicating that there may not be a difference in Pacific Giant Salamander's ability to survive in the two different habitat types.
-```{r}
+```{r, echo = FALSE}
 ggplot(data = mack_creek_dite, aes(x = year, y = n)) +
   geom_line(color = "orange") +
   facet_wrap(~section) +
@@ -82,7 +82,7 @@ ggplot(data = mack_creek_dite, aes(x = year, y = n)) +
 
 B. Table of 2017 salamander counts by channel classification (pool, cascades and side-channel) in old growth (OG) and clear cut (CC) sections of Mack Creek...
 
-```{r}
+```{r, echo = FALSE}
 #Get the counts....
 mack_creek_counts <- mack_creek_vert %>% 
   filter(unittype %in% c("P", "C", "SC")) %>% 
@@ -102,29 +102,31 @@ mack_creek_table <- mack_creek_counts %>%
   pivot_wider(names_from = unittype, values_from = n) %>% 
   rename("Pool" = P,
          "Cascades" = C,
-         "Side Channel" = SC)
+         "Side Channel" = SC,
+         "Section" = section)
 
 ```
  
 
-Table of counts and proportions
-```{r}
+***Table 1: 2017 Pacific Giant Salamander Counts by Channel Classification in Mack Creek*** *Pacific Giant Salamander counts along clear cut and old growth forest sections of Mack Creek. Mack Creek is further separated by channel classifications into cascades, pool, and side channel. The most Pacific Giant Salamander counts were made along the cascades channel classification of Mack Creek for both the clear cut and old growth sections. The least Pacific Giant Salamander counts were made along the pool channel classifications of Mack Creek.*
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
 mack_creek_props <- mack_creek_table %>% 
   adorn_percentages(denominator = "row") %>% 
   adorn_pct_formatting(digits = 1) %>% 
   adorn_ns(position = "front")
 
-mack_creek_props
+mack_creek_props$Section <- gsub("CC", "Clear Cut", mack_creek_props$Section)
+mack_creek_props$Section <- gsub("OG", "Old Growth", mack_creek_props$Section)
+
 
 kable(mack_creek_props) %>% 
   kable_styling(bootstrap_options = "striped", 
                 full_width = F,
                 position = "center") %>% 
   row_spec(c(1:2),
-                   color = "purple")
+                   color = "navy")
 
-mack_creek_props$section <- gsub("CC", "Clear cut", mack_creek_props$section)
-mack_creek_props$section <- gsub("OG", "Old growth", mack_creek_props$section)
+
 
 ```
 
