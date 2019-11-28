@@ -61,11 +61,13 @@ ggplot(data = mack_creek_dite, aes(x = year, y = n, fill = section)) +
   scale_y_continuous(expand = c(0,0)) +
   theme_dark() +
   labs(y = "Total Counts",
-       title = "Annual Salamander Counts in Old Growth (OG) & Clear Cut (CC)",
-       caption = "1993 - 2017",
-       x = NULL)
+       fill = "Section",
+       x = "Year")
 ```
 
+***Figure 3: Annual Salamander Counts in Old Growth (OG) & Clear Cut (CC) Forests along Mack Creek.*** *Counts of Pacific Giant Salamander in clear cut forest and old growth forest sections along Mack Creek are shown from 1993 through 2017. Data [Gregory S.V. 2016](https://doi.org/10.6073/pasta/5de64af9c11579266ef20da2ff32f702]*
+
+Observations of Pacific Giant Salamander's along Mack Creek are compared between the old growth sections and clear cut sections between the years of 1993 and 2017. As shown in Figure 3, the overall graph shapes and counts are very similar between the two different sections between the years. General trends along both graphs show that there was an increase in observation counts during the year 2002. There was a decrease in counts during 2014 and then the counts then increased again after that. These trends are consistent across both creek sections, indicating that there may not be a difference in Pacific Giant Salamander's ability to survive in the two different habitat types.
 ```{r}
 ggplot(data = mack_creek_dite, aes(x = year, y = n)) +
   geom_line(color = "orange") +
