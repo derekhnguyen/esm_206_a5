@@ -19,6 +19,7 @@ library(tidyr)
 library(kableExtra)
 library(car)
 library(ggbeeswarm)
+library(ggridges)
 ```
 
 INTRODUCTION
@@ -90,27 +91,28 @@ mack_creek_counts <- mack_creek_vert %>%
   filter(year == "2017") %>% 
   filter(section %in% c("CC", "OG")) %>% 
   count(unittype, species, year, section) %>% 
-  group_by(unittype, section) %>%
-  group_by(section)
-
-  
-  
-
-# wide format
-mack_creek_table <- mack_creek_counts %>% 
-  select(-year, -species) %>% 
-  pivot_wider(names_from = unittype, values_from = n) %>% 
+  group_by(unittype, section) %>% 
+  summarize(counts = sum(n)) %>% 
+  pivot_wider(names_from = unittype, values_from = counts) %>% 
   rename("Pool" = P,
          "Cascades" = C,
          "Side Channel" = SC,
          "Section" = section)
+
+mack_creek_counts
+
+  
+  
+
+
+
 
 ```
  
 
 ***Table 1: 2017 Pacific Giant Salamander Counts by Channel Classification in Mack Creek*** *Pacific Giant Salamander counts along clear cut and old growth forest sections of Mack Creek. Mack Creek is further separated by channel classifications into cascades, pool, and side channel. The most Pacific Giant Salamander counts were made along the cascades channel classification of Mack Creek for both the clear cut and old growth sections. The least Pacific Giant Salamander counts were made along the pool channel classifications of Mack Creek.*
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
-mack_creek_props <- mack_creek_table %>% 
+mack_creek_props <- mack_creek_counts %>% 
   adorn_percentages(denominator = "row") %>% 
   adorn_pct_formatting(digits = 1) %>% 
   adorn_ns(position = "front")
@@ -134,7 +136,17 @@ kable(mack_creek_props) %>%
 C.  Is there a significant difference in where in the channel Pacific giant salamanders are located (pool, cascade or side channel) between the two sections (old growth and clear cut)? 
 
 ```{r}
+chi_test_location <- mack_creek_counts %>% 
+  select(-Section)
 
+chi_test_location
+```
+
+
+```{r}
+chi_test_channel <- chisq.test(chi_test_location)
+
+chi_test_channel
 ```
 
 
@@ -149,13 +161,15 @@ D. Compare weights of Pacific giant salamanders in clear cut and old growth fore
 ```{r}
 section_mack_creek_weight <- mack_creek_vert %>% 
   select(year, species, section, weight) %>% 
-  filter(year == "2017",
-         species == "DITE",
-         section %in% c("OG", "CC")) %>% 
+  filter(year %in% "2017",
+         species %in% "DITE") %>% 
   group_by(section) %>% 
   summarize(mean_weight = mean(weight, na.rm = TRUE),
             sd_weight = sd(weight, na.rm = TRUE),
             sample_size = n())
+
+section_mack_creek_weight$section <- gsub("OG", "Old growth", section_mack_creek_weight$section)
+section_mack_creek_weight$section <- gsub("CC", "Clear cut", section_mack_creek_weight$section)
 
 kable(section_mack_creek_weight) %>% 
   kable_styling(bootstrap_options = "striped", 
@@ -164,8 +178,6 @@ kable(section_mack_creek_weight) %>%
   row_spec(c(1:2),
                    color = "purple")
 
-section_mack_creek_weight$section <- gsub("OG", "Old growth", section_mack_creek_weight$section)
-section_mack_creek_weight$section <- gsub("CC", "Clear cut", section_mack_creek_weight$section)
 
 
 ```
@@ -173,7 +185,9 @@ section_mack_creek_weight$section <- gsub("CC", "Clear cut", section_mack_creek_
 Is there a significant difference in mean weights for Pacific giant salamanders observed in the two forest sections (clear cut and old growth) in 2017? 
  
 ```{r}
+weight_ttest <- t.test(section_mack_creek_weight$mean_weight)
 
+weight_ttest
 ```
 
 
@@ -185,9 +199,9 @@ E. Compare weights of Pacific giant salamanders in pools, cascades and side-chan
 First,
 ```{r}
 mack_creek_weight_unit <- mack_creek_vert %>% 
-  filter(year == "2017",
-         species == "DITE",
-         unittype != "IP") %>% 
+  filter(year %in% "2017",
+         species %in% "DITE",
+         unittype %in% c("P", "C", "SC")) %>% 
   group_by(unittype) 
 ```
 
@@ -201,6 +215,11 @@ summary_mack_creek_weight_unit <- mack_creek_weight_unit %>%
             se_weight = sd((weight) / sqrt(n()), (na.rm = TRUE)),
             var_weight = var(weight, na.rm = TRUE))
 
+summary_mack_creek_weight_unit$unittype <- gsub("C", "Cascade", summary_mack_creek_weight_unit$unittype)
+summary_mack_creek_weight_unit$unittype <- gsub("P", "Pool", summary_mack_creek_weight_unit$unittype)
+
+summary_mack_creek_weight_unit$unittype <- gsub("SC", "Side-Channel", summary_mack_creek_weight_unit$unittype)
+
 kable(summary_mack_creek_weight_unit) %>% 
   kable_styling(bootstrap_options = "striped", 
                 full_width = F,
@@ -208,36 +227,58 @@ kable(summary_mack_creek_weight_unit) %>%
   row_spec(c(1:3),
                    color = "purple")
 
+summary_mack_creek_weight_unit
+
 ```
+
 
 ```{r}
 ggplot() +
   geom_beeswarm(data = mack_creek_weight_unit,
                 aes(x = unittype,
                     y = weight,
-                    color = unittype),
+                    color = unittype
+                    ),
                 show.legend = FALSE,
                 size = 1.4,
-                alpha = 0.7) +
-  scale_x_discrete(labels = c("P", "CC", "SC")) +
-  geom_point(data = summary_mack_creek_weight_unit, aes(x = unittype, y = mean_weight),
-             color = "firebrick",
-             size = 2.2,
-             width = 0.3) +
-  theme_minimal() +
-  geom_errorbar(data = summary_mack_creek_weight_unit,
-                aes(x = unittype,
-                    ymin = mean_weight - sd_weight,
-                    ymax = mean_weight + sd_weight),
-                color = "firebrick",
-                width = 0.25) +
-  theme_minimal() +
+                alpha = 0.6) +
   labs(x = "Unit Type",
        y = "Weight (grams)",
        title = "Pacific Giant Salamander Weights between the Three Channels",
-       caption = "Weight comparison for 2017")
+       caption = "Weight comparison for 2017") +
+ 
+  scale_x_discrete(labels = c("Pool", "Cascades", "Side-channel")) +
+  theme_dark() 
 ```
 
+```{r}
+ggplot(data = mack_creek_weight_unit, aes(x = unittype, y = weight, color = unittype)) +
+geom_violin(aes(color = unittype, fill = ""),
+            alpha = 0.5) +
+  geom_jitter()  +
+  theme_dark()
+  
+```
+
+temp_graph <- ggplot(sb_buoy_num, aes(x = atmp,
+                                      y = month_name)) +
+  geom_density_ridges(aes(color = month_name, fill = month_name, alpha = 0.5)) +
+  scale_x_continuous(limits = c(5,25),
+                     expand = c(0,0)) +
+  theme_light()
+
+temp_graph
+
+```{r}
+ggplot(data = mack_creek_weight_unit, aes(x = weight,
+                                          y = unittype)) +
+  geom_density_ridges(aes(color = unittype, fill = unittype, alpha = 0.7),
+                      show.legend = FALSE) +
+  scale_x_continuous(expand = c(0,0)) +
+  theme_dark()
+
+mack_creek_weight_unit 
+```
 
 
 SEcond, Is there a significant difference in mean weights for Pacific giant salamanders observed in pools vs. cascades vs. side-channels in 2017?
