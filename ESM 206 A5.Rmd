@@ -231,6 +231,10 @@ summary_mack_creek_weight_unit
 
 ```
 
+```{r}
+pd <- position_dodge(width = 0.4)
+```
+
 
 ```{r}
 ggplot() +
@@ -241,7 +245,9 @@ ggplot() +
                     ),
                 show.legend = FALSE,
                 size = 1.4,
-                alpha = 0.6) +
+                alpha = 0.6,
+                position = pd) +
+  geom_point(data = summary_mack_creek_weight_unit, aes(x = unittype, y = mean_weight), position = pd) +
   labs(x = "Unit Type",
        y = "Weight (grams)",
        title = "Pacific Giant Salamander Weights between the Three Channels",
@@ -260,22 +266,17 @@ geom_violin(aes(color = unittype, fill = ""),
   
 ```
 
-temp_graph <- ggplot(sb_buoy_num, aes(x = atmp,
-                                      y = month_name)) +
-  geom_density_ridges(aes(color = month_name, fill = month_name, alpha = 0.5)) +
-  scale_x_continuous(limits = c(5,25),
-                     expand = c(0,0)) +
-  theme_light()
-
-temp_graph
 
 ```{r}
 ggplot(data = mack_creek_weight_unit, aes(x = weight,
                                           y = unittype)) +
-  geom_density_ridges(aes(color = unittype, fill = unittype, alpha = 0.7),
+  geom_density_ridges(aes(color = unittype, fill = unittype, alpha = 0.6),
                       show.legend = FALSE) +
-  scale_x_continuous(expand = c(0,0)) +
-  theme_dark()
+  scale_x_continuous(expand = c(0,0))  +
+  theme_dark() +
+  labs(x = "Weight (grams)",
+       y = "Unit-type",
+       title = "Pacific Salamander Weights Across 3 Channels")
 
 mack_creek_weight_unit 
 ```
