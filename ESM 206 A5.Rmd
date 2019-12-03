@@ -27,6 +27,8 @@ INTRODUCTION
 
 
 
+
+
 Citation: Gregory S. V. 2016. Aquatic Vertebrate Population Study in Mack Creek, Andrews Experimental Forest, 1987 to present. Environmental Data Initiative. https://doi.org/10.6073/pasta/5de64af9c11579266ef20da2ff32f702. Dataset accessed 11/19/2019.
 
 ![](mander.jpeg)
@@ -56,13 +58,12 @@ mack_creek_dite_table <- mack_creek_dite %>%
 
 ```{r, echo = FALSE}
 ggplot(data = mack_creek_dite, aes(x = year, y = n, fill = section)) +
-  geom_col(alpha = .8) +
+  geom_col(alpha = .8, show.legend = FALSE) +
   facet_wrap(~section) +
   scale_x_continuous(expand = c(0,0)) +
   scale_y_continuous(expand = c(0,0)) +
   theme_dark() +
   labs(y = "Total Counts",
-       fill = "Section",
        x = "Year")
 ```
 
@@ -94,10 +95,12 @@ mack_creek_counts <- mack_creek_vert %>%
   group_by(unittype, section) %>% 
   summarize(counts = sum(n)) %>% 
   pivot_wider(names_from = unittype, values_from = counts) %>% 
+
   rename("Pool" = P,
          "Cascades" = C,
          "Side Channel" = SC,
          "Section" = section)
+
 
 mack_creek_counts
 
@@ -148,6 +151,7 @@ chi_test_channel <- chisq.test(chi_test_location)
 
 chi_test_channel
 ```
+Using the 2017 Pacific Giant Salamander counts in clear cut sections (Cascades: `r mack_creek_props$Cascades[1]`, Pool: `r mack_creek_props$Pool[1]`, Side Channel: `r mack_creek_props$"Side Channel"[1]`) and old growth sections (Cascades: `r mack_creek_props$Cascades[2]`, Pool: `r mack_creek_props$Pool[2]`, Side Channel: `r mack_creek_props$"Side Channel"[2]`) in Mack Creek, there is no association (`r chi_test_channel[["p.value"]]`) between Pacific Giant Salamander counts in clear cut and old growth sections. In other words, there is not a significant effect of forest condition on where in the channel Pacific Giant Salamanders are found.
 
 
 H0: Is there a significant difference in where pacific giant salamanders are located between the two sections? 
@@ -162,14 +166,19 @@ D. Compare weights of Pacific giant salamanders in clear cut and old growth fore
 section_mack_creek_weight <- mack_creek_vert %>% 
   select(year, species, section, weight) %>% 
   filter(year %in% "2017",
-         species %in% "DITE") %>% 
+         species %in% "DITE",
+         section %in% c("CC", "OG")) %>% 
   group_by(section) %>% 
   summarize(mean_weight = mean(weight, na.rm = TRUE),
             sd_weight = sd(weight, na.rm = TRUE),
             sample_size = n())
 
+
+
+
+
 section_mack_creek_weight$section <- gsub("OG", "Old growth", section_mack_creek_weight$section)
-section_mack_creek_weight$section <- gsub("CC", "Clear cut", section_mack_creek_weight$section)
+section_mack_creek_weight$section <- gsub("CC", "Clear cut", section_mack_creek_weight$section) 
 
 kable(section_mack_creek_weight) %>% 
   kable_styling(bootstrap_options = "striped", 
@@ -185,12 +194,31 @@ kable(section_mack_creek_weight) %>%
 Is there a significant difference in mean weights for Pacific giant salamanders observed in the two forest sections (clear cut and old growth) in 2017? 
  
 ```{r}
-weight_ttest <- t.test(section_mack_creek_weight$mean_weight)
+weight_2017 <- mack_creek_vert %>% 
+  select(c("section", "year", "species", "weight")) %>% 
+  filter(section %in% c("CC", "OG"),
+         year %in% "2017",
+         species %in% "DITE")
+```
+ 
+ 
+```{r}
+weight_og <- weight_2017 %>% 
+  filter(section =="OG",
+         year %in% "2017") %>% 
+  pull(weight)
+
+weight_cc <- weight_2017 %>% 
+  filter(section == "CC",
+         year %in% "2017") %>% 
+  pull(weight)
+
+weight_ttest <- t.test(weight_cc, weight_og)
 
 weight_ttest
 ```
 
-
+There is NO significant difference in mean weights for Pacific Giant Salamanders between the two forest sections (clear cut & old growth) in 2017. The mean salamander weights for clear cut, `r round(weight_ttest[["estimate"]][1], 2)` grams, and old growth, `r round(weight_ttest[["estimate"]][2], 2)` grams, forest sections do not differ significantly (two-sided t-test, t(`r round(weight_ttest[["parameter"]][1], 0)`) = `r round(weight_ttest[["statistic"]][1], 2)` *p* = `r round(weight_ttest[["p.value"]][1], 3)`)
 
 
 
