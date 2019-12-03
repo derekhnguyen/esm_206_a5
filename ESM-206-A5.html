@@ -622,9 +622,24 @@ Side Channel
 <pre class="r"><code>lm_weight &lt;- lm(weight ~unittype, data = mack_creek_weight_unit)
 weight_aov_3 &lt;- Anova(lm_weight)</code></pre>
 <ul>
-<li>There is no significant variance across the three observed unittypes. Hence, we retain the null hypothesis that there is no significant difference in mean weights for Pacific Giant Salamanders. 0.0151494, NA</li>
+<li>There is no significant variance across the three observed unittypes. Hence, we retain the null hypothesis that there is no significant difference in mean weights for Pacific Giant Salamanders. The F statistic0.0151494, NA</li>
 </ul>
 <p>Third, describe any concerns you have about comparing means across the groups. What might be another option to consider moving forward with the analysis?</p>
+<pre class="r"><code>weight_tukey &lt;- TukeyHSD(weight_aov)
+
+weight_tukey</code></pre>
+<pre><code>##   Tukey multiple comparisons of means
+##     95% family-wise confidence level
+## 
+## Fit: aov(formula = weight ~ unittype, data = mack_creek_weight_unit)
+## 
+## $unittype
+##           diff        lwr        upr     p adj
+## P-C   1.776650 -0.9846147  4.5379145 0.2862119
+## SC-C -1.844204 -3.8759182  0.1875106 0.0841989
+## SC-P -3.620854 -6.7089770 -0.5327303 0.0166225</code></pre>
+<p>There is a significant difference between side channel and pool unit types (<em>p</em> = 0.02)</p>
+<p>one way ANOVA with post-hoc TUKEy’s HSD reveals significant difference in mean flipper length across all species (Gentoo, mean = , Chinstrap, mean = ……, Adelie, mean = …….) (F(df) = …., p &lt; 0.001 for all pairwise comparisons)</p>
 
 
 

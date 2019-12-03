@@ -301,8 +301,12 @@ weight_aov_3 <- Anova(lm_weight)
 Third, describe any concerns you have about comparing means across the groups. What might be another option to consider moving forward with the analysis?
 
 ```{r}
-TukeyHSD(weight_aov)
+weight_tukey <- TukeyHSD(weight_aov)
+
+weight_tukey
 ```
+
+There is only a significant difference between side channel and pool unit types (*p* = `r round(weight_tukey$unittype[3,4],2)`).
 
 
 one way ANOVA with post-hoc TUKEy's HSD reveals significant difference in mean flipper length across all species (Gentoo, mean = , Chinstrap, mean = ......, Adelie, mean = .......) (F(df) = ...., p < 0.001 for all pairwise comparisons)
