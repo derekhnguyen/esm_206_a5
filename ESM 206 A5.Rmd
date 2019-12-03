@@ -225,15 +225,11 @@ E. Compare weights of Pacific giant salamanders in pools, cascades and side-chan
 First,
 ```{r, echo = FALSE, message = FALSE}
 mack_creek_weight_unit <- mack_creek_vert %>% 
-  filter(year %in% "2017",
-         species %in% "DITE",
-         unittype %in% c("P", "C", "SC")) %>% 
-  group_by(unittype) 
-```
+  filter(year == "2017",
+         species == "DITE",
+         unittype %in% c("C", "P", "SC")) %>% 
+  group_by(unittype)
 
-
-
-```{r, echo = FALSE, message = FALSE}
 summary_mack_creek_weight_unit <- mack_creek_weight_unit %>% 
   summarize(mean_weight = mean(weight, na.rm = TRUE),
             sd_weight = sd(weight, na.rm = TRUE),
@@ -241,12 +237,14 @@ summary_mack_creek_weight_unit <- mack_creek_weight_unit %>%
             se_weight = sd((weight) / sqrt(n()), (na.rm = TRUE)),
             var_weight = var(weight, na.rm = TRUE))
 
-summary_mack_creek_weight_unit$unittype <- gsub("C", "Cascade", summary_mack_creek_weight_unit$unittype)
-summary_mack_creek_weight_unit$unittype <- gsub("P", "Pool", summary_mack_creek_weight_unit$unittype)
 
-summary_mack_creek_weight_unit$unittype <- gsub("SC", "Side-Channel", summary_mack_creek_weight_unit$unittype)
 
-kable(summary_mack_creek_weight_unit) %>% 
+table_summary <- summary_mack_creek_weight_unit
+table_summary$unittype[table_summary$unittype == "C"] <- "Cascade"
+table_summary$unittype[table_summary$unittype == "P"] <- "Pool"
+table_summary$unittype[table_summary$unittype == "SC"] <- "Side Channel"
+
+kable(table_summary) %>% 
   kable_styling(bootstrap_options = "striped", 
                 full_width = F,
                 position = "center") %>% 
@@ -256,13 +254,13 @@ kable(summary_mack_creek_weight_unit) %>%
 
 ```
 
-```{r, echo = FALSE, message = FALSE}
-pd <- position_dodge(width = 0.4)
-```
 
 
+
+
+
 ```{r, echo = FALSE, message = FALSE}
-ggplot() +
+ggplot(data = summary_mack_creek_weight_unit, aes(x = unittype, y = mean_weight)) +
   geom_beeswarm(data = mack_creek_weight_unit,
                 aes(x = unittype,
                     y = weight,
@@ -270,46 +268,41 @@ ggplot() +
                     ),
                 show.legend = FALSE,
                 size = 1.4,
-                alpha = 0.6,
-                position = pd) +
-  geom_point(data = summary_mack_creek_weight_unit, aes(x = unittype, y = mean_weight), position = pd) +
+                alpha = 0.6) +
+  geom_errorbar(data = summary_mack_creek_weight_unit, aes(ymin = mean_weight - sd_weight, ymax = mean_weight + sd_weight),
+                width = 0.2, color = "firebrick") +
+  geom_point(data = summary_mack_creek_weight_unit, aes(x = unittype, y = mean_weight)) +
   labs(x = "Unit Type",
        y = "Weight (grams)",
        title = "Pacific Giant Salamander Weights between the Three Channels",
        caption = "Weight comparison for 2017") +
  
   scale_x_discrete(labels = c("Pool", "Cascades", "Side-channel")) +
+  scale_y_continuous(expand = c(0,0)) +
   theme_dark() 
 ```
 
-```{r, echo = FALSE, message = FALSE}
-ggplot(data = mack_creek_weight_unit, aes(x = unittype, y = weight, color = unittype)) +
-geom_violin(aes(color = unittype, fill = ""),
-            alpha = 0.5) +
-  geom_jitter()  +
-  theme_dark()
-  
-```
-
-
-```{r, echo = FALSE, message = FALSE}
-ggplot(data = mack_creek_weight_unit, aes(x = weight,
-                                          y = unittype)) +
-  geom_density_ridges(aes(color = unittype, fill = unittype, alpha = 0.6),
-                      show.legend = FALSE) +
-  scale_x_continuous(expand = c(0,0))  +
-  theme_dark() +
-  labs(x = "Weight (grams)",
-       y = "Unit-type",
-       title = "Pacific Salamander Weights Across 3 Channels")
-
-```
 
 
 Second, Is there a significant difference in mean weights for Pacific giant salamanders observed in pools vs. cascades vs. side-channels in 2017?
+```{r}
+weight_aov <- aov(weight ~ unittype, data = mack_creek_weight_unit) 
+  summary(mack_creek_weight_unit)
+  
+lm_weight <- lm(weight ~unittype, data = mack_creek_weight_unit)
+weight_aov_3 <- Anova(lm_weight)
 
-- 
+```
+
+- There is no significant variance across the three observed unittypes. Hence, we retain the null hypothesis that there is no significant difference in mean weights for Pacific Giant Salamanders. The F statistic`r weight_aov_3$"Pr(>F)"` 
 
 
-Third, describe any concerns you have about comparing means across the groups. What might be another option to consider moving forward with the analysis
 
+Third, describe any concerns you have about comparing means across the groups. What might be another option to consider moving forward with the analysis?
+
+```{r}
+TukeyHSD(weight_aov)
+```
+
+
+one way ANOVA with post-hoc TUKEy's HSD reveals significant difference in mean flipper length across all species (Gentoo, mean = , Chinstrap, mean = ......, Adelie, mean = .......) (F(df) = ...., p < 0.001 for all pairwise comparisons)
